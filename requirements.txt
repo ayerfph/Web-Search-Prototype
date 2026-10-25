@@ -1,0 +1,11 @@
+# Astro Runtime includes the following pre-installed providers packages: https://www.astronomer.io/docs/astro/runtime-image-architecture#provider-packages
+pandas
+numpy
+requests
+python-dotenv
+SQLAlchemy
+psycopg[binary]
+dbt-postgres
+# Optional but commonly useful for warehouse/ETL workflows
+apache-airflow-providers-postgres
+apache-airflow-providers-snowflake

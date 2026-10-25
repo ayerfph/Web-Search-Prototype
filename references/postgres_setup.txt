@@ -1,0 +1,60 @@
+CREATE TABLE IF NOT EXISTS pokemon (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    height INTEGER NOT NULL,
+    weight INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS pokemon_descriptions (
+    id INTEGER PRIMARY KEY REFERENCES pokemon(id) ON DELETE CASCADE,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL
+);
+
+ALTER TABLE pokemon_descriptions
+    ADD COLUMN IF NOT EXISTS category TEXT;
+
+-- Add the key when this file is applied to an existing table created without
+-- the primary-key constraint. This makes the description upsert idempotent.
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conrelid = 'pokemon_descriptions'::regclass
+          AND contype IN ('p', 'u')
+          AND conkey = ARRAY[
+              (
+                  SELECT attnum
+                  FROM pg_attribute
+                  WHERE attrelid = 'pokemon_descriptions'::regclass
+                    AND attname = 'id'
+              )
+          ]
+    ) THEN
+        ALTER TABLE pokemon_descriptions
+            ADD CONSTRAINT pokemon_descriptions_pkey PRIMARY KEY (id);
+    END IF;
+END
+$$;
+
+CREATE TABLE IF NOT EXISTS pokemon_types (
+    id INTEGER PRIMARY KEY REFERENCES pokemon(id) ON DELETE CASCADE,
+    type_1 TEXT NOT NULL,
+    type_2 TEXT
+);
+
+CREATE TABLE IF NOT EXISTS pokemon_abilities (
+    id INTEGER PRIMARY KEY REFERENCES pokemon(id) ON DELETE CASCADE,
+    ability_name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS pokemon_stats (
+    id INTEGER PRIMARY KEY REFERENCES pokemon(id) ON DELETE CASCADE,
+    hp INTEGER NOT NULL,
+    attack INTEGER NOT NULL,
+    defense INTEGER NOT NULL,
+    special_attack INTEGER NOT NULL,
+    special_defense INTEGER NOT NULL,
+    speed INTEGER NOT NULL
+);
